@@ -28,8 +28,9 @@ const didnt = (props) =>{
     // finds the task index by its key, updates the array instance, then updates setRefresh
     //      so the FlatList knows to rerender its items to the updated values.
     const updateList = (title, description, key) => {
-        let index = taskList.findIndex(obj => obj.key === key);
-        taskList[index] = {title, description, key};
+        // let index = taskList.findIndex(obj => obj.key === key);
+        // taskList[index] = {title, description, key};
+        props.editList({title: title, description: description, key: key});
         setRefresh(!refresh);
     }
 
@@ -40,24 +41,27 @@ const didnt = (props) =>{
     }
     const addTask = (task) =>{
         task.key = Date.now().toString();
-        setTaskList((currentTasks) => {
-            return [...currentTasks, task];
-        });
+        // setTaskList((currentTasks) => {
+        //     return [...currentTasks, task];
+        // });
         setModalVisible(false);
         props.increaseCounter(task);
+        setRefresh(!refresh);
         //console.log(taskList.length);
     }
-    React.componentDidMount = () => {
-        mounted = true;
-    }
-    React.componentWillUnmount = () => {
-        mounted = false;
-    }
+    // React.componentDidMount = () => {
+    //     mounted = true;
+    // }
+    // React.componentWillUnmount = () => {
+    //     mounted = false;
+    // }
     React.useEffect(() => {
         if(props.route.params?.terminate){
             alert('delete');
-            setTaskList(deleteTask(props.route.params.key));
             setRefresh(!refresh);
+            props.decreaseCounter(props.route.params)
+            // setTaskList(deleteTask(props.route.params.key));
+            
             props.route.params.terminate = !props.route.params.terminate;
         }
         else {
@@ -123,6 +127,7 @@ function mapDispatchToProps(dispatch) {
     return {
         increaseCounter: (task) => dispatch({ type: 'INCREASE_COUNTER', payload: task}),
         decreaseCounter: (task) => dispatch({ type: 'DECREASE_COUNTER', payload: task}),
+        editList: (task) => dispatch({type: 'Edit_List', payload: task}),
     }
 }
 

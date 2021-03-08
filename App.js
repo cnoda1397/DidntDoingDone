@@ -28,10 +28,16 @@ const reducer = (state = initialState, action) => {
     switch (action.type) {
         case 'INCREASE_COUNTER':
             state.counter.push(action.payload);
-            console.log(JSON.stringify(state.counter))
+            //alert(JSON.stringify(action.payload));
+            //console.log(JSON.stringify(state.counter));
             return {counter: state.counter};
         case 'DECREASE_COUNTER':
-            state.counter = state.counter.filter((obj) => obj.key !== action.payload.key)
+            let newList = state.counter.filter((obj) => obj.key !== action.payload.key);
+            return {counter: newList};
+        case 'Edit_List':
+            let taskList = state.counter;
+            let index = taskList.findIndex(obj => obj.key === action.payload.key);
+            taskList[index] = action.payload;
         default:
             return state;
     }
