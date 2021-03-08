@@ -1,18 +1,23 @@
+// React & React Native
 import React, {useState, useEffect} from 'react';
 import {View, StyleSheet, Text, TextInput, FlatList, Button, Modal, TouchableHighlight, TouchableOpacity} from 'react-native'
 import {Formik} from 'formik';
 import { Ionicons } from '@expo/vector-icons';
+// React Navigation
 import {CommonActions} from '@react-navigation/native';
 import {createStackNavigator} from '@react-navigation/stack';
+// Components & Constants
 import {globalStyles} from '../constants/styles';
 import Numerics from '../constants/numerics';
 import Card from '../components/Card';
 import Task from '../components/Task';
 import Colors from '../constants/colors';
 import TaskAdder from '../components/TaskAdder'
+// Redux
+import { connect } from 'react-redux'
 
 let mounted = false;
-const didnt = ({route, navigation}) =>{
+const didnt = (props) =>{
     //modal visibility, the array of tasks, boolean switch for when tasks are updated
     const [modalVisible, setModalVisible] = useState(false);
     const [taskList, setTaskList] = useState([]);
@@ -23,8 +28,9 @@ const didnt = ({route, navigation}) =>{
     // finds the task index by its key, updates the array instance, then updates setRefresh
     //      so the FlatList knows to rerender its items to the updated values.
     const updateList = (title, description, key) => {
-        let index = taskList.findIndex(obj => obj.key === key);
-        taskList[index] = {title, description, key};
+        // let index = taskList.findIndex(obj => obj.key === key);
+        // taskList[index] = {title, description, key};
+        props.editList({title: title, description: description, key: key});
         setRefresh(!refresh);
     }
 
@@ -35,33 +41,39 @@ const didnt = ({route, navigation}) =>{
     }
     const addTask = (task) =>{
         task.key = Date.now().toString();
-        setTaskList((currentTasks) => {
-            return [...currentTasks, task];
-        });
+        // setTaskList((currentTasks) => {
+        //     return [...currentTasks, task];
+        // });
         setModalVisible(false);
-        console.log(taskList.length);
+        props.increaseCounter(task);
+        setRefresh(!refresh);
+        //console.log(taskList.length);
     }
-    React.componentDidMount = () => {
-        mounted = true;
-    }
-    React.componentWillUnmount = () => {
-        mounted = false;
-    }
+    // React.componentDidMount = () => {
+    //     mounted = true;
+    // }
+    // React.componentWillUnmount = () => {
+    //     mounted = false;
+    // }
     React.useEffect(() => {
-        if(route.params?.terminate){
+        if(props.route.params?.terminate){
             alert('delete');
-            setTaskList(deleteTask(route.params.key));
             setRefresh(!refresh);
-            route.params.terminate = !route.params.terminate;
+            props.decreaseCounter(props.route.params)
+            // setTaskList(deleteTask(props.route.params.key));
+            
+            props.route.params.terminate = !props.route.params.terminate;
         }
         else {
-            if(route.params?.description || route.params?.title){
+            if(props.route.params?.description || props.route.params?.title){
             alert('refresh');
-            console.log(JSON.stringify(route.params));
-            const {title, description, key} = route.params;
-            updateList(title, description, key);
-        }}
-    }, [route.params?.terminate, route.params?.title, route.params?.description])
+            console.log(JSON.stringify(props.route.params));
+            const {title, description, key} = props.route.params;
+            props.editList({title: title, description: description, key: key});
+            } 
+            setRefresh(!refresh);
+        }
+    }, [props.route.params?.terminate, props.route.params?.title, props.route.params?.description, props.route.params?.refresh])
 
     // Function that deletes a task from the TaskList
     // returns the array, but filters out any task with the passed key
@@ -76,14 +88,15 @@ const didnt = ({route, navigation}) =>{
             <Modal visible={modalVisible} animationType='slide'>
             <TaskAdder addTask={addTask} closeModalHandler={closeModalHandler}/>
             </Modal>
-            <View style={styles.listContainer}>        
+            <View style={styles.listContainer}>
+                <Text>{JSON.stringify(props.counter)}</Text>        
                 <FlatList 
                     keyExtractor={(item, index) => item.key}
-                    data={taskList}
+                    data={props.counter}
                     extraData = {refresh}     
                     renderItem={({ item }) => (
                         <View style={styles.listItem}>
-                            <TouchableOpacity onPress = {() => navigation.navigate('Details', {
+                            <TouchableOpacity onPress = {() => props.navigation.navigate('Details', {
                                 title: item.title,
                                 description: item.description,
                                 key: item.key,
@@ -95,7 +108,7 @@ const didnt = ({route, navigation}) =>{
                         </View>
                     )}
                 />
-                {/* <Button title="*" onPress={()=>console.log(JSON.stringify(route.params))}/> in case params gets messed up again*/}
+                {/* <Button title="*" onPress={()=>console.log(JSON.stringify(props.route.params))}/> in case params gets messed up again*/}
                 <View style={styles.addButton}>
                     <TouchableOpacity onPress = {() => {
                         setModalVisible(true)
@@ -107,6 +120,18 @@ const didnt = ({route, navigation}) =>{
         </View>
     );
 };
+function mapStateToProps(state) {
+    return {
+        counter: state.counter
+    }
+}
+function mapDispatchToProps(dispatch) {
+    return {
+        increaseCounter: (task) => dispatch({ type: 'INCREASE_COUNTER', payload: task}),
+        decreaseCounter: (task) => dispatch({ type: 'DECREASE_COUNTER', payload: task}),
+        editList: (task) => dispatch({type: 'Edit_List', payload: task}),
+    }
+}
 
 const styles = StyleSheet.create({
     screen: {
@@ -174,4 +199,4 @@ const styles = StyleSheet.create({
     }
     });
 
-export default didnt;
+    export default connect(mapStateToProps, mapDispatchToProps)(didnt);

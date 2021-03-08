@@ -1,5 +1,5 @@
 import React, {useState} from 'react';
-import {View, StyleSheet, Text, TextInput, FlatList, Button, Modal, ScrollView, Touchable} from 'react-native'
+import {View, StyleSheet, Text, TextInput, ScrollView} from 'react-native'
 import { Header } from 'react-native/Libraries/NewAppScreen';
 import {Formik} from 'formik';
 import {CommonActions} from '@react-navigation/native';
@@ -12,10 +12,12 @@ import Task from '../components/Task';
 import Colors from '../constants/colors';
 import { TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+// Redux
+import { connect } from 'react-redux'
 
 // takes in task with values title, description, key; [setFunctions for each?]
-const Details = ({route, navigation}) => {
-    const {title, description, key} = route.params;
+const Details = (props) => {
+    const {title, description, key} = props.route.params;
     const [newTitle, setnewTitle] = useState(title);
     const [newDescription, setNewDescription] = useState(description);
 
@@ -46,13 +48,17 @@ const Details = ({route, navigation}) => {
             </View>
             <View style={styles.buttonContainer}>
                 <TouchableOpacity style={styles.button} onPress = {() => {
-                    navigation.navigate('Didnt', {terminate: true, key: key, title: null, description: null})
+                    //props.navigation.navigate('Didnt', {terminate: true, key: key, title: null, description: null})
+                    props.decreaseCounter({title: newTitle, description: newDescription, key: key});
+                    props.navigation.navigate('Didnt', {refresh: true});
                     }}>
                     <Ionicons name="trash-outline" size={60} color={Colors.secondary} />
                     <Text>Delete </Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.button} onPress = {() => {
-                    navigation.navigate('Didnt', {title: newTitle, description: newDescription, key: key, terminate: null})
+                    //props.navigation.navigate('Didnt', {title: newTitle, description: newDescription, key: key, terminate: null})  
+                    props.editList({title: newTitle, description: newDescription, key: key});
+                    props.navigation.navigate('Didnt');
                     }}>
                     <Ionicons name="enter-outline" size={60} color={Colors.secondary} />
                     <Text> Submit</Text>
@@ -74,4 +80,15 @@ const styles = StyleSheet.create({
         alignItems: 'center'
     }
 });
-export default Details;
+function mapStateToProps(state) {
+    return {
+        counter: state.counter
+    }
+}
+function mapDispatchToProps(dispatch) {
+    return {
+        decreaseCounter: (task) => dispatch({ type: 'DECREASE_COUNTER', payload: task}),
+        editList: (task) => dispatch({type: 'Edit_List', payload: task}),
+    }
+}
+export default connect(mapStateToProps, mapDispatchToProps)(Details);
