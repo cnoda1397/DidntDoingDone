@@ -13,7 +13,7 @@ import Card from '../components/Card';
 import Task from '../components/Task';
 import Colors from '../constants/colors';
 import TaskAdder from '../components/TaskAdder'
-
+// Redux
 import { connect } from 'react-redux'
 
 let mounted = false;
@@ -69,9 +69,11 @@ const didnt = (props) =>{
             alert('refresh');
             console.log(JSON.stringify(props.route.params));
             const {title, description, key} = props.route.params;
-            updateList(title, description, key);
-        }}
-    }, [props.route.params?.terminate, props.route.params?.title, props.route.params?.description])
+            props.editList({title: title, description: description, key: key});
+            } 
+            setRefresh(!refresh);
+        }
+    }, [props.route.params?.terminate, props.route.params?.title, props.route.params?.description, props.route.params?.refresh])
 
     // Function that deletes a task from the TaskList
     // returns the array, but filters out any task with the passed key

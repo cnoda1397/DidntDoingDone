@@ -27,7 +27,9 @@ const reducer = (state = initialState, action) => {
     //const {taskList} = state;
     switch (action.type) {
         case 'INCREASE_COUNTER':
-            state.counter.push(action.payload);
+            let task = action.payload;
+            task.key = Date.now().toString();
+            state.counter.push(task);
             //alert(JSON.stringify(action.payload));
             //console.log(JSON.stringify(state.counter));
             return {counter: state.counter};
