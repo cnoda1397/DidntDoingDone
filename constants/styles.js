@@ -1,10 +1,11 @@
 import {StyleSheet} from 'react-native';
-import Numerics from './numerics'
+import Numerics from './numerics';
+import Colors from './colors';
 
 export const globalStyles = StyleSheet.create({
     screen: {
         flex: 1,
-        borderWidth: 5,
+        // borderWidth: 5,
     },
     container: {
         flex: 1,
@@ -29,5 +30,11 @@ export const globalStyles = StyleSheet.create({
     paragraph: {
         marginVertical: 8,
         lineHeight: 20,
-      },
+    },
+    checkList: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingLeft: '15%',
+        fontSize: 18,
+    },
 });

@@ -49,7 +49,7 @@ const Details = (props) => {
             <View style={styles.buttonContainer}>
                 <TouchableOpacity style={styles.button} onPress = {() => {
                     //props.navigation.navigate('Didnt', {terminate: true, key: key, title: null, description: null})
-                    props.decreaseCounter({title: newTitle, description: newDescription, key: key});
+                    props.deleteFromList({title: newTitle, description: newDescription, key: key});
                     props.navigation.navigate('Didnt', {refresh: true});
                     }}>
                     <Ionicons name="trash-outline" size={60} color={Colors.secondary} />
@@ -57,7 +57,7 @@ const Details = (props) => {
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.button} onPress = {() => {
                     //props.navigation.navigate('Didnt', {title: newTitle, description: newDescription, key: key, terminate: null})  
-                    props.editList({title: newTitle, description: newDescription, key: key});
+                    props.updateList({title: newTitle, description: newDescription, key: key});
                     props.navigation.navigate('Didnt');
                     }}>
                     <Ionicons name="enter-outline" size={60} color={Colors.secondary} />
@@ -82,13 +82,14 @@ const styles = StyleSheet.create({
 });
 function mapStateToProps(state) {
     return {
-        counter: state.counter
+        didntList: state.didntList
     }
 }
 function mapDispatchToProps(dispatch) {
     return {
-        decreaseCounter: (task) => dispatch({ type: 'DECREASE_COUNTER', payload: task}),
-        editList: (task) => dispatch({type: 'Edit_List', payload: task}),
+        addToList: (task) => dispatch({ type: 'ADD', payload: task}),
+        deleteFromList: (task) => dispatch({ type: 'DELETE', payload: task}),
+        updateList: (task) => dispatch({type: 'UPDATE', payload: task}),
     }
 }
 export default connect(mapStateToProps, mapDispatchToProps)(Details);

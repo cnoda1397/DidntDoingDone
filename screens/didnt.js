@@ -19,20 +19,17 @@ import { connect } from 'react-redux'
 let mounted = false;
 const didnt = (props) =>{
     //modal visibility, the array of tasks, boolean switch for when tasks are updated
-    const [modalVisible, setModalVisible] = useState(false);
-    const [taskList, setTaskList] = useState([]);
-    const [refresh, setRefresh] = useState(false); // the value of refresh does not matter. The changing of the value tells the FlatList to rerender.
- 
+    const [modalVisible, setModalVisible] = useState(false); 
 
     // Function that updates a task in the TaskList
     // finds the task index by its key, updates the array instance, then updates setRefresh
     //      so the FlatList knows to rerender its items to the updated values.
-    const updateList = (title, description, key) => {
-        // let index = taskList.findIndex(obj => obj.key === key);
-        // taskList[index] = {title, description, key};
-        props.editList({title: title, description: description, key: key});
-        setRefresh(!refresh);
-    }
+    // const updateList = (title, description, key) => {
+    //     // let index = taskList.findIndex(obj => obj.key === key);
+    //     // taskList[index] = {title, description, key};
+    //     props.editList({title: title, description: description, key: key});
+    //     setRefresh(!refresh);
+    // }
 
     // Function that adds a task to the TaskList
     // returns the array with the new task appended
@@ -41,47 +38,36 @@ const didnt = (props) =>{
     }
     const addTask = (task) =>{
         task.key = Date.now().toString();
-        // setTaskList((currentTasks) => {
-        //     return [...currentTasks, task];
-        // });
         setModalVisible(false);
-        props.increaseCounter(task);
-        setRefresh(!refresh);
-        //console.log(taskList.length);
+        props.addToList(task);
     }
-    // React.componentDidMount = () => {
-    //     mounted = true;
-    // }
-    // React.componentWillUnmount = () => {
-    //     mounted = false;
-    // }
-    React.useEffect(() => {
-        if(props.route.params?.terminate){
-            alert('delete');
-            setRefresh(!refresh);
-            props.decreaseCounter(props.route.params)
-            // setTaskList(deleteTask(props.route.params.key));
+    // React.useEffect(() => {
+    //     if(props.route.params?.terminate){
+    //         alert('delete');
+    //         setRefresh(!refresh);
+    //         props.decreaseCounter(props.route.params)
+    //         // setTaskList(deleteTask(props.route.params.key));
             
-            props.route.params.terminate = !props.route.params.terminate;
-        }
-        else {
-            if(props.route.params?.description || props.route.params?.title){
-            alert('refresh');
-            console.log(JSON.stringify(props.route.params));
-            const {title, description, key} = props.route.params;
-            props.editList({title: title, description: description, key: key});
-            } 
-            setRefresh(!refresh);
-        }
-    }, [props.route.params?.terminate, props.route.params?.title, props.route.params?.description, props.route.params?.refresh])
+    //         props.route.params.terminate = !props.route.params.terminate;
+    //     }
+    //     else {
+    //         if(props.route.params?.description || props.route.params?.title){
+    //         alert('refresh');
+    //         console.log(JSON.stringify(props.route.params));
+    //         const {title, description, key} = props.route.params;
+    //         props.editList({title: title, description: description, key: key});
+    //         } 
+    //     }
+    //     setRefresh(!refresh);
+    // }, [props.route.params?.terminate, props.route.params?.title, props.route.params?.description, props.route.params?.refresh])
 
     // Function that deletes a task from the TaskList
     // returns the array, but filters out any task with the passed key
-    const deleteTask = (key) =>{
-        console.log("removing", key);
-        //console.log(JSON.stringify(taskList));
-        return taskList.filter((obj) => obj.key !== key);
-    }
+    // const deleteTask = (key) =>{
+    //     console.log("removing", key);
+    //     //console.log(JSON.stringify(taskList));
+    //     return taskList.filter((obj) => obj.key !== key);
+    // }
 
     return(
         <View style={styles.screen}>
@@ -89,11 +75,11 @@ const didnt = (props) =>{
             <TaskAdder addTask={addTask} closeModalHandler={closeModalHandler}/>
             </Modal>
             <View style={styles.listContainer}>
-                <Text>{JSON.stringify(props.counter)}</Text>        
+                {/* <Text>{JSON.stringify(props.counter)}</Text>         */}
                 <FlatList 
                     keyExtractor={(item, index) => item.key}
-                    data={props.counter}
-                    extraData = {refresh}     
+                    data={props.didntList}
+                    extraData = {props.refresh}     
                     renderItem={({ item }) => (
                         <View style={styles.listItem}>
                             <TouchableOpacity onPress = {() => props.navigation.navigate('Details', {
@@ -122,14 +108,15 @@ const didnt = (props) =>{
 };
 function mapStateToProps(state) {
     return {
-        counter: state.counter
+        refresh: state.refresh,
+        didntList: state.didntList
     }
 }
 function mapDispatchToProps(dispatch) {
     return {
-        increaseCounter: (task) => dispatch({ type: 'INCREASE_COUNTER', payload: task}),
-        decreaseCounter: (task) => dispatch({ type: 'DECREASE_COUNTER', payload: task}),
-        editList: (task) => dispatch({type: 'Edit_List', payload: task}),
+        addToList: (task) => dispatch({ type: 'ADD', payload: task}),
+        deleteFromList: (task) => dispatch({ type: 'DELETE', payload: task}),
+        editList: (task) => dispatch({type: 'UPDATE', payload: task}),
     }
 }
 
@@ -172,8 +159,8 @@ const styles = StyleSheet.create({
         alignContent: 'center',
         flexDirection: 'column',
         justifyContent: 'space-around',
-        borderColor: 'red',
-        borderWidth: 5,
+        borderColor: 'black',
+        borderWidth: 1,
         backgroundColor: Colors.primary,
     },
     taskName: {

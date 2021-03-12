@@ -17,35 +17,75 @@ import Task from './components/Task';
 // Redux
 import { createStore } from 'redux'
 import { Provider } from 'react-redux'
+import SwipeNav from './navigation/SwipeNav';
 
 const Stack = createStackNavigator();
-
+let newList = [];
+let index = 0;
 const initialState = {
-    counter: [{title: 'hello world', description: 'I am Iron Man', key: '616'}],
+    refresh: true,
+    didntList: [{title: 'I am Iron Man', description: 'I Love You 3000', key: '616', screen: 'didnt'}],
+    doingList: [{title: 'I am Iron Man', description: 'I Love You 3000', key: '616', screen: 'doing'}],
+    doneList: [{title: 'I am Iron Man', description: 'I Love You 3000', key: '616', screen: 'done'}],
 }
 const reducer = (state = initialState, action) => {
-    //const {taskList} = state;
+    
+    let refreshScreen = !state.refresh;
     switch (action.type) {
-        case 'INCREASE_COUNTER':
+        case 'ADD':
             let task = action.payload;
             task.key = Date.now().toString();
-            state.counter.push(task);
+            state.didntList.push(task);
             //alert(JSON.stringify(action.payload));
             //console.log(JSON.stringify(state.counter));
-            return {counter: state.counter};
-        case 'DECREASE_COUNTER':
-            let newList = state.counter.filter((obj) => obj.key !== action.payload.key);
-            return {counter: newList};
-        case 'Edit_List':
-            let taskList = state.counter;
-            let index = taskList.findIndex(obj => obj.key === action.payload.key);
-            taskList[index] = action.payload;
+            break;
+        case 'DELETE':
+            newList = state.didntList.filter((obj) => obj.key !== action.payload.key);
+            state.didntList = newList;
+            break;
+        case 'UPDATE':
+            newList = state.didntList;
+            index = newList.findIndex(obj => obj.key === action.payload.key);
+            newList[index] = action.payload;
+            state.didntList = newList;
+            alert(JSON.stringify(newList))
+            break;
+
         default:
             return state;
     }
-    const newState = {taskList};
+    const newState = {refresh: refreshScreen, didntList: state.didntList, doingList: state.doingList, doneLsit: state.doneList};
     return newState;
 }
+
+const addToList = ({task, list}) =>{
+    newList = list;
+    list.push(task);
+    return newList;
+}
+
+const deleteFromList = ({task, list}) =>{
+    newList = list.filter((obj)=>obj.key !== task.key)
+    return newList;
+}
+const updateList = ({task, list}) =>{
+    newList = state.didntList;
+    index = newList.findIndex(obj => obj.key === action.payload.key);
+    newList[index] = action.payload;
+    return newList;
+}
+{/* algorithm:
+    on details screen, make copy of original screen value or maybe use *initialValue?*
+    On submission, compare the old screen to the new screen. If they match, use update.
+    If they don't, use move -> pass in the first and new list destinations.
+ */}
+const moveToNewList = ({task, prevList, nextList}) =>{
+    oldList = deleteFromList({task, prevList});
+    newList = nextList;
+    newList.push(task);
+    return {old:oldList, new:newList};
+}
+
 const store = createStore(reducer)
 export default class App extends React.Component {
  
@@ -54,28 +94,7 @@ export default class App extends React.Component {
         return (
             <Provider store = {store} >
                 <NavigationContainer>
-                    <Stack.Navigator initialRouteName="Didnt">
-                        <Stack.Screen name="Didnt" component={Didnt} options={{ 
-                            title: "Didn't",
-                            headerStyle: {
-                                backgroundColor: Colors.primary,
-                                },
-                                headerTintColor: 'white',
-                                headerTitleStyle: {
-                                    fontWeight: 'bold',
-                                    fontSize: 30
-                                }}} />
-                        <Stack.Screen name="Details" component={Details} options={{ 
-                            title: 'Details',
-                            headerStyle: {
-                                backgroundColor: Colors.primary,
-                                },
-                                headerTintColor: 'white',
-                                headerTitleStyle: {
-                                    fontWeight: 'bold',
-                                    fontSize: 30
-                                }}} />
-                    </Stack.Navigator>
+                    <SwipeNav/>
                 </NavigationContainer>
             </Provider>
         );
