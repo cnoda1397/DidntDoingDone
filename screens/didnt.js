@@ -21,54 +21,14 @@ const didnt = (props) =>{
     //modal visibility, the array of tasks, boolean switch for when tasks are updated
     const [modalVisible, setModalVisible] = useState(false); 
 
-    // Function that updates a task in the TaskList
-    // finds the task index by its key, updates the array instance, then updates setRefresh
-    //      so the FlatList knows to rerender its items to the updated values.
-    // const updateList = (title, description, key) => {
-    //     // let index = taskList.findIndex(obj => obj.key === key);
-    //     // taskList[index] = {title, description, key};
-    //     props.editList({title: title, description: description, key: key});
-    //     setRefresh(!refresh);
-    // }
-
-    // Function that adds a task to the TaskList
-    // returns the array with the new task appended
     const closeModalHandler = () =>{
         setModalVisible(false);
     }
     const addTask = (task) =>{
-        task.key = Date.now().toString();
         setModalVisible(false);
+        //alert(JSON.stringify(props.didntList));
         props.addToList(task);
     }
-    // React.useEffect(() => {
-    //     if(props.route.params?.terminate){
-    //         alert('delete');
-    //         setRefresh(!refresh);
-    //         props.decreaseCounter(props.route.params)
-    //         // setTaskList(deleteTask(props.route.params.key));
-            
-    //         props.route.params.terminate = !props.route.params.terminate;
-    //     }
-    //     else {
-    //         if(props.route.params?.description || props.route.params?.title){
-    //         alert('refresh');
-    //         console.log(JSON.stringify(props.route.params));
-    //         const {title, description, key} = props.route.params;
-    //         props.editList({title: title, description: description, key: key});
-    //         } 
-    //     }
-    //     setRefresh(!refresh);
-    // }, [props.route.params?.terminate, props.route.params?.title, props.route.params?.description, props.route.params?.refresh])
-
-    // Function that deletes a task from the TaskList
-    // returns the array, but filters out any task with the passed key
-    // const deleteTask = (key) =>{
-    //     console.log("removing", key);
-    //     //console.log(JSON.stringify(taskList));
-    //     return taskList.filter((obj) => obj.key !== key);
-    // }
-
     return(
         <View style={styles.screen}>
             <Modal visible={modalVisible} animationType='slide'>
@@ -82,11 +42,14 @@ const didnt = (props) =>{
                     extraData = {props.refresh}     
                     renderItem={({ item }) => (
                         <View style={styles.listItem}>
-                            <TouchableOpacity onPress = {() => props.navigation.navigate('Details', {
+                            <TouchableOpacity onPress = {() => {
+                                props.navigation.navigate('Details', {
                                 title: item.title,
                                 description: item.description,
                                 key: item.key,
-                            })}>
+                                screen: item.screen
+                                })
+                            }}>
                                 <Card style={styles.taskCard}>
                                     <Text style={styles.taskName}>{item.title}</Text>
                                 </Card> 
@@ -115,8 +78,6 @@ function mapStateToProps(state) {
 function mapDispatchToProps(dispatch) {
     return {
         addToList: (task) => dispatch({ type: 'ADD', payload: task}),
-        deleteFromList: (task) => dispatch({ type: 'DELETE', payload: task}),
-        editList: (task) => dispatch({type: 'UPDATE', payload: task}),
     }
 }
 

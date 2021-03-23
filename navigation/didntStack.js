@@ -17,6 +17,7 @@ const didntStack = (props) => {
                     }} />
                 <Stack.Screen name="Details" component={Details} options={{ 
                     title: 'Details',
+                    headerShown:true,
                     }} />
             </Stack.Navigator>
     );

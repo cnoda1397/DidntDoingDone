@@ -20,6 +20,7 @@ export default function TaskAdder({addTask, closeModalHandler}){
         {screen:"done", checked:false, key:'3'},
     ]);
     const [refresh, setRefresh] = useState(false);
+    const [finalScreen, setFinalScreen] = useState('didnt')
 
     const checkScreen = (screen) => {
         let list = screenList;
@@ -31,6 +32,7 @@ export default function TaskAdder({addTask, closeModalHandler}){
                 item.checked = false;
             }
         });
+        setFinalScreen(screen);
         setScreenList(list);
         setRefresh(!refresh);
     }
@@ -39,6 +41,8 @@ export default function TaskAdder({addTask, closeModalHandler}){
             <Formik 
                 initialValues={{title: '', description: '', key: '', screen: 'didnt'}}
                 onSubmit= {(values, actions) => {
+                    values.screen = finalScreen;
+                    console.log('End Of TaskAdder\n');
                     actions.resetForm();
                     addTask(values);
                 }}
@@ -81,7 +85,9 @@ export default function TaskAdder({addTask, closeModalHandler}){
                                 <View style={globalStyles.checkList}>    
                                     <CheckBox
                                         value={item.checked}
-                                        onValueChange={()=>checkScreen(item.screen)}
+                                        onValueChange={()=>{
+                                            checkScreen(item.screen)
+                                        }}
                                         tintColors={{true:Colors.primary}}
                                     />
                                     <Text style={{fontSize: 24, fontWeight: 'bold'}}>{screenMap[item.screen]}</Text>
