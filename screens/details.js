@@ -1,5 +1,5 @@
 import React, {useState} from 'react';
-import {View, StyleSheet, Text, TextInput, FlatList, Keyboard} from 'react-native'
+import {View, StyleSheet, Text, TextInput, FlatList, Keyboard, SectionList} from 'react-native'
 import CheckBox from '@react-native-community/checkbox';
 import { Header } from 'react-native/Libraries/NewAppScreen';
 import {Formik} from 'formik';
@@ -13,10 +13,17 @@ import Task from '../components/Task';
 import Colors from '../constants/colors';
 import { TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view'
-// Redux
-import { connect } from 'react-redux'
+
 import { ScrollView } from 'react-native-gesture-handler';
+import * as SQLite from 'expo-sqlite';
+
+let mounted = false;
+const database_name = 'taskDB'
+const database_version = '1.0'
+const database_displayname = 'TaskList Database'
+const database_size = 200000
+let db = SQLite.openDatabase(database_name);
+
 let screenMap = new Map();
 screenMap['didnt'] = "Didn't";
 screenMap['doing'] = 'Doing';
@@ -29,6 +36,7 @@ const Details = (props) => {
     const [newScreen, setNewScreen] = useState(screen);
     const [refresh, setRefresh] = useState(false);
     const [hide, setHide] = useState(false);
+    
     const [screenList, setScreenList] = useState([
         {screen:'didnt', checked: false, key:'1'},
         {screen:"doing", checked: false, key:'2'},
@@ -49,6 +57,14 @@ const Details = (props) => {
         setScreenList(list);
         setRefresh(!refresh);
     }
+    React.componentDidMount = () =>{
+        const keyboardHider = Keyboard.addListener('keyboardDidShow', typing())
+        const keyboardShower = Keyboard.addListener('keyboardDidShow', notTyping())
+    };
+    React.componentWillUnmount = () =>{
+        keyboardHider.remove();
+        keyboardShower.remover();
+    }
     React.useEffect(() =>{
         const screenCheckBox = props.navigation.addListener('focus',()=>{
             screenList.forEach(item=>{
@@ -56,19 +72,20 @@ const Details = (props) => {
                     item.checked = true;
                 }    
             })
-            setRefresh(!refresh);
+            setRefresh(!refresh);          
         })
-        const keyboardHider = Keyboard.addListener('keyboardDidShow', typing)
-        const keyboardShower = Keyboard.addListener('keyboardDidShow', notTyping)
-    })
+        // const keyboardUp = Keyboard.addListener('keyboardWillShow', typing())
+        // const keyboardDown = Keyboard.addListener('keyboardWillHide', notTyping())
+    }, [])
     const typing = () => {
+        console.log('typing');
         setHide(true);
     }
     const notTyping = () => {
+        console.log('no typing')
         setHide(false);
     }
     return (
-        
         <View style={globalStyles.screen}>
             {/* <KeyboardAwareScrollView 
                 style={{backgroundColor: 'white'}}
@@ -101,52 +118,66 @@ const Details = (props) => {
                 />
             </View>
             </ScrollView>
-            {!hide ? (
-            <FlatList
-                keyExtractor={(item, index) => item.key}
-                data={screenList}
-                extraData={refresh}
-                renderItem={({ item }) => (
-                <TouchableOpacity onPress={()=>{
-                    checkScreen(item.screen)
-                    }}>
-                    <View style={globalStyles.checkList}>    
-                        <CheckBox
-                            value={item.checked}
-                            disabled={item.checked}
-                            onValueChange={(check)=>{
-                                checkScreen(item.screen)
-                                if(check) {checkScreen(item.screen)}
-                            }}
-                            tintColors={{true:Colors.primary}}
-                        />
-                        <Text style={{fontSize: 24, fontWeight: 'bold'}}>{screenMap[item.screen]}</Text>
-                    </View>
+            
+            <View>
+                <FlatList
+                    keyExtractor={(item, index) => item.key}
+                    data={screenList}
+                    extraData={refresh}
+                    renderItem={({ item }) => (
+                    <TouchableOpacity onPress={()=>{
+                        checkScreen(item.screen)
+                        }}>
+                        <View style={globalStyles.checkList}>    
+                            <CheckBox
+                                value={item.checked}
+                                disabled={item.checked}
+                                onValueChange={(check)=>{
+                                    checkScreen(item.screen)
+                                    if(check) {checkScreen(item.screen)}
+                                }}
+                                tintColors={{true:Colors.primary}}
+                            />
+                            <Text style={{fontSize: 24, fontWeight: 'bold'}}>{screenMap[item.screen]}</Text>
+                        </View>
+                        </TouchableOpacity>
+                    )}
+                />
+                
+                <View style={styles.buttonContainer}>
+                    <TouchableOpacity style={styles.button} onPress = {() => {
+                        //props.navigation.navigate('Didnt', {terminate: true, key: key, title: null, description: null})
+                        //props.deleteFromList({title: newTitle, description: newDescription, key: key, screen: newScreen});
+                        //props.navigation.navigate('Didnt', {refresh: true});
+                        db.transaction(tx=>{
+                            tx.executeSql('delete from ' + screen + ' where key = ?', [key]);
+                            tx.executeSql('select * from didnt', [], (_, {rows: {_array}}) =>
+                                console.log(JSON.stringify(_array)));
+                        })
+                        props.navigation.dispatch(CommonActions.goBack());
+                        }}>
+                        <Ionicons name="trash-outline" size={60} color={Colors.secondary} />
+                        <Text>Delete </Text>
                     </TouchableOpacity>
-                )}
-            />): null}
-            <View style={styles.buttonContainer}>
-                <TouchableOpacity style={styles.button} onPress = {() => {
-                    //props.navigation.navigate('Didnt', {terminate: true, key: key, title: null, description: null})
-                    props.deleteFromList({title: newTitle, description: newDescription, key: key, screen: newScreen});
-                    //props.navigation.navigate('Didnt', {refresh: true});
-                    props.navigation.dispatch(CommonActions.goBack());
-                    }}>
-                    <Ionicons name="trash-outline" size={60} color={Colors.secondary} />
-                    <Text>Delete </Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.button} onPress = {() => {
-                    //props.navigation.navigate('Didnt', {title: newTitle, description: newDescription, key: key, terminate: null}) 
-                    if(newScreen !== oldScreen){
-                        props.moveList({title: newTitle, description: newDescription, key: key, screen: newScreen}, oldScreen);
-                    } else {
-                        props.updateList({title: newTitle, description: newDescription, key: key, screen: newScreen});
-                    }
-                    props.navigation.dispatch(CommonActions.goBack());
-                    }}>
-                    <Ionicons name="enter-outline" size={60} color={Colors.secondary} />
-                    <Text> Submit</Text>
-                </TouchableOpacity>
+                    <TouchableOpacity style={styles.button} onPress = {() => {
+                        //props.navigation.navigate('Didnt', {title: newTitle, description: newDescription, key: key, terminate: null}) 
+                        if(newScreen !== oldScreen){
+                            db.transaction(tx=>{
+                                tx.executeSql('delete from ' + oldScreen + ' where key = ?', [key]);
+                                tx.executeSql('insert into ' + newScreen + ' (title, description, key, screen) values (?, ?, ?, ?)', [newTitle, newDescription, key, newScreen]);
+                                tx.executeSql('select * from ' + newScreen, [], (_, {rows: {_array}}) =>
+                                    console.log(JSON.stringify(_array)));
+                            })
+                        } else {
+                            db.transaction(tx=>{
+                            tx.executeSql('update ' + newScreen  + ' set title = ?, description = ? where key = ?;', [newTitle, newDescription, key]);
+                        })}
+                        props.navigation.dispatch(CommonActions.goBack());
+                        }}>
+                        <Ionicons name="enter-outline" size={60} color={Colors.secondary} />
+                        <Text> Submit</Text>
+                    </TouchableOpacity>
+                </View>
             </View>
         </View>
     )
@@ -164,22 +195,8 @@ const styles = StyleSheet.create({
         alignItems: 'center'
     }
 });
-function mapStateToProps(state) {
-    return {
-        didntList: state.didntList,
-        doingList: state.doingList,
-        doneList: state.doneList
-    }
-}
-function mapDispatchToProps(dispatch) {
-    return {
-        addToList: (task) => dispatch({ type: 'ADD', payload: task}),
-        deleteFromList: (task) => dispatch({ type: 'DELETE', payload: task}),
-        updateList: (task) => dispatch({type: 'UPDATE', payload: task}),
-        moveList: (task, oldScreen) => dispatch({type: 'MOVE', payload: task, oldScreen: oldScreen})
-    }
-}
-export default connect(mapStateToProps, mapDispatchToProps)(Details);
+
+export default Details;
 
 
 

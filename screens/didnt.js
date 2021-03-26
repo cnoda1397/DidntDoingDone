@@ -13,22 +13,64 @@ import Card from '../components/Card';
 import Task from '../components/Task';
 import Colors from '../constants/colors';
 import TaskAdder from '../components/TaskAdder'
-// Redux
-import { connect } from 'react-redux'
+
+import * as SQLite from 'expo-sqlite';
 
 let mounted = false;
+const database_name = 'taskDB'
+const database_version = '1.0'
+const database_displayname = 'TaskList Database'
+const database_size = 200000
+let db = SQLite.openDatabase(database_name);
+
 const didnt = (props) =>{
+    let navigation = props.navigation;
     //modal visibility, the array of tasks, boolean switch for when tasks are updated
     const [modalVisible, setModalVisible] = useState(false); 
-
+    const [list, setList] = useState([]);
+    const [refresh, setRefresh] = useState(false);
     const closeModalHandler = () =>{
         setModalVisible(false);
     }
+    // const addTask = (task =>{
+    //     setModalVisible(false);
+    //     props.addToList(task);
+    //     setRefresh(!refresh);
+    // })
     const addTask = (task) =>{
+        task.key = Date.now().toString();
         setModalVisible(false);
         //alert(JSON.stringify(props.didntList));
-        props.addToList(task);
+        //props.addToList(task);
+        db.transaction(tx =>{
+            tx.executeSql('insert into ' + task.screen + ' (title, description, key, screen) values (?, ?, ?, ?)', [task.title, task.description, task.key, task.screen]);
+            tx.executeSql('select * from didnt', [], (_, {rows: {_array}}) => {
+                console.log(JSON.stringify(_array));
+                refreshScreen();
+            });
+
+        });
+        // db.transaction(tx => {
+        //     tx.executeSql('select * from didnt where key not = ?', ['123456789'], (_, {rows: {_array}}) => setList(_array));
+        //     tx.executeSql('drop database taskDB;');
+        //});
+        //db = SQLite.openDatabase(database_name);
+        //setRefresh(!refresh);
     }
+    const refreshScreen = () =>{
+        db.transaction(tx => {
+            tx.executeSql(tx.executeSql('select * from didnt', [], (_, {rows: {_array}}) => setList(_array)));
+        });
+        setRefresh(!refresh);
+    }
+    React.useEffect(() => {
+        const update = navigation.addListener('focus', () => {
+            db.transaction(tx => {
+                tx.executeSql(tx.executeSql('select * from didnt', [], (_, {rows: {_array}}) => setList(_array)));
+                tx.executeSql(tx.executeSql('select * from didnt', [], (_, {rows: {_array}}) => console.log(JSON.stringify(_array))));
+            });
+          });
+      }, []);
     return(
         <View style={styles.screen}>
             <Modal visible={modalVisible} animationType='slide'>
@@ -38,8 +80,8 @@ const didnt = (props) =>{
                 {/* <Text>{JSON.stringify(props.counter)}</Text>         */}
                 <FlatList 
                     keyExtractor={(item, index) => item.key}
-                    data={props.didntList}
-                    extraData = {props.refresh}     
+                    data={list}
+                    extraData = {refresh}     
                     renderItem={({ item }) => (
                         <View style={styles.listItem}>
                             <TouchableOpacity onPress = {() => {
@@ -57,6 +99,10 @@ const didnt = (props) =>{
                         </View>
                     )}
                 />
+                <Button title="refresh screen" onPress={()=>{
+                    console.log('refreshing')
+                    refreshScreen();
+                    }}/>
                 {/* <Button title="*" onPress={()=>console.log(JSON.stringify(props.route.params))}/> in case params gets messed up again*/}
                 <View style={styles.addButton}>
                     <TouchableOpacity onPress = {() => {
@@ -69,17 +115,6 @@ const didnt = (props) =>{
         </View>
     );
 };
-function mapStateToProps(state) {
-    return {
-        refresh: state.refresh,
-        didntList: state.didntList
-    }
-}
-function mapDispatchToProps(dispatch) {
-    return {
-        addToList: (task) => dispatch({ type: 'ADD', payload: task}),
-    }
-}
 
 const styles = StyleSheet.create({
     screen: {
@@ -147,4 +182,4 @@ const styles = StyleSheet.create({
     }
     });
 
-    export default connect(mapStateToProps, mapDispatchToProps)(didnt);
+    export default didnt;

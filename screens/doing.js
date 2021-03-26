@@ -13,14 +13,21 @@ import Card from '../components/Card';
 import Task from '../components/Task';
 import Colors from '../constants/colors';
 import TaskAdder from '../components/TaskAdder'
-// Redux
-import { connect } from 'react-redux'
 
-let mounted = false;
+import * as SQLite from 'expo-sqlite';
+
+const database_name = 'taskDB'
+const database_version = '1.0'
+const database_displayname = 'TaskList Database'
+const database_size = 200000
+let db = SQLite.openDatabase(database_name);
 const doing = (props) =>{
+    let navigation = props.navigation;
     //modal visibility, the array of tasks, boolean switch for when tasks are updated
     const [modalVisible, setModalVisible] = useState(false); 
-
+    const [list, setList] = useState([]);
+    const [refresh, setRefresh] = useState(false);
+    
     // Function that updates a task in the TaskList
     // finds the task index by its key, updates the array instance, then updates setRefresh
     //      so the FlatList knows to rerender its items to the updated values.
@@ -36,11 +43,56 @@ const doing = (props) =>{
     const closeModalHandler = () =>{
         setModalVisible(false);
     }
+    // const addTask = (task) =>{
+    //     task.key = Date.now().toString();
+    //     setModalVisible(false);
+    //     props.addToList(task);
+    // }
     const addTask = (task) =>{
         task.key = Date.now().toString();
         setModalVisible(false);
-        props.addToList(task);
+        //alert(JSON.stringify(props.didntList));
+        //props.addToList(task);
+        db.transaction(tx =>{
+            tx.executeSql('insert into ' + task.screen + ' (title, description, key, screen) values (?, ?, ?, ?)', [task.title, task.description, task.key, task.screen]);
+            tx.executeSql('select * from doing', [], (_, {rows: {_array}}) => {
+                console.log(JSON.stringify(_array));
+                refreshScreen();
+            });
+
+        });
+        // db.transaction(tx => {
+        //     tx.executeSql('select * from didnt where key not = ?', ['123456789'], (_, {rows: {_array}}) => setList(_array));
+        //     tx.executeSql('drop database taskDB;');
+        //});
+        //db = SQLite.openDatabase(database_name);
+        //setRefresh(!refresh);
     }
+    const refreshScreen = () =>{
+        db.transaction(tx => {
+            tx.executeSql(tx.executeSql('select * from doing', [], (_, {rows: {_array}}) => {
+                setList(_array)
+                console.log(JSON.stringify(_array))
+            }));
+        });
+        setRefresh(!refresh);
+    }
+    const killList = () =>{
+        db.transaction(tx => {
+            tx.executeSql(tx.executeSql('delete from doing;', []));
+            tx.executeSql(tx.executeSql('select * from doing', [], (_, {rows: {_array}}) => {
+                console.log(JSON.stringify(_array))
+            }));
+        });
+        setRefresh(!refresh);
+    }
+    React.useEffect(() => {
+        const update = navigation.addListener('focus', () => {
+            db.transaction(tx => {
+                tx.executeSql(tx.executeSql('select * from doing', [], (_, {rows: {_array}}) => setList(_array)));
+            });
+          });
+      }, []);
     // React.useEffect(() => {
     //     if(props.route.params?.terminate){
     //         alert('delete');
@@ -78,8 +130,8 @@ const doing = (props) =>{
                 {/* <Text>{JSON.stringify(props.counter)}</Text>         */}
                 <FlatList 
                     keyExtractor={(item, index) => item.key}
-                    data={props.doingList}
-                    extraData = {props.refresh}     
+                    data={list}
+                    extraData = {refresh}     
                     renderItem={({ item }) => (
                         <View style={styles.listItem}>
                             <TouchableOpacity onPress = {() => props.navigation.navigate('Details', {
@@ -95,6 +147,14 @@ const doing = (props) =>{
                         </View>
                     )}
                 />
+                <Button title="refresh screen" onPress={()=>{
+                    console.log('refreshing')
+                    refreshScreen();
+                    }}/>
+                <Button title="Kill List" onPress={()=>{
+                    console.log('Allah Ahkbar')
+                    killList();
+                    }}/>
                 {/* <Button title="*" onPress={()=>console.log(JSON.stringify(props.route.params))}/> in case params gets messed up again*/}
                 <View style={styles.addButton}>
                     <TouchableOpacity onPress = {() => {
@@ -107,20 +167,6 @@ const doing = (props) =>{
         </View>
     );
 };
-function mapStateToProps(state) {
-    return {
-        refresh: state.refresh,
-        doingList: state.doingList
-    }
-}
-function mapDispatchToProps(dispatch) {
-    return {
-        addToList: (task) => dispatch({ type: 'ADD', payload: task}),
-        deleteFromList: (task) => dispatch({ type: 'DELETE', payload: task}),
-        editList: (task) => dispatch({type: 'UPDATE', payload: task}),
-    }
-}
-
 const styles = StyleSheet.create({
     screen: {
         backgroundColor: 'white',
@@ -187,4 +233,4 @@ const styles = StyleSheet.create({
     }
     });
 
-    export default connect(mapStateToProps, mapDispatchToProps)(doing);
+    export default doing;
