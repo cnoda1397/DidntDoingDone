@@ -16,7 +16,7 @@ import { Ionicons } from '@expo/vector-icons';
 
 import { ScrollView } from 'react-native-gesture-handler';
 import * as SQLite from 'expo-sqlite';
-
+import {HideWithKeyboard} from 'react-native-hide-with-keyboard';
 let mounted = false;
 const database_name = 'taskDB'
 const database_version = '1.0'
@@ -94,6 +94,7 @@ const Details = (props) => {
                 scrollEnabled={true}
             > */}
             <ScrollView>
+                {/*Title*/}
             <View style={{
                 flex: 1,
                 alignItems: 'center',
@@ -103,24 +104,35 @@ const Details = (props) => {
                     value = {newTitle}
                     onChangeText={(value) => setnewTitle(value)}
                     editable = {true}
+                    placeholder = 'No Title Entered Yet'
+                    placeholderTextColor = 'grey'
                 />
             </View>
+
+            {/*Description*/}
             <View style={{
                 flex: 3,
                 alignItems: 'center',
                 padding: 20
                 }}>
-                <TextInput style={globalStyles.input}
+                <TextInput style={globalStyles.inputBody}
+                    multiline minHeight = {200}
                     value = {newDescription}
                     onChangeText={(value) => setNewDescription(value)}
                     editable = {true}
                     multiline ={true}
+                    textAlign = {'left'}
+                    textAlignVertical = {'top'}
+                    placeholder = 'No Description Entered Yet'
+                    placeholderTextColor = 'grey'
                 />
             </View>
             </ScrollView>
             
             <View>
+                <HideWithKeyboard>
                 <FlatList
+                    style={{paddingBottom: 60}}
                     keyExtractor={(item, index) => item.key}
                     data={screenList}
                     extraData={refresh}
@@ -178,7 +190,9 @@ const Details = (props) => {
                         <Text> Submit</Text>
                     </TouchableOpacity>
                 </View>
+                </HideWithKeyboard>
             </View>
+            
         </View>
     )
 }

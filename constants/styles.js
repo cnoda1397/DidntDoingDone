@@ -28,6 +28,19 @@ export const globalStyles = StyleSheet.create({
         justifyContent: 'center',
         alignContent: 'center'
     },
+    inputBody: {
+        borderWidth: 1,
+        borderColor: '#ddd',
+        padding: 10,
+        fontSize: 18,
+        borderRadius: 6,
+        width: '100%',
+        alignSelf: 'flex-start',
+        justifyContent: 'flex-start',
+        alignItems: 'flex-start',
+        alignContent: 'flex-start'
+        
+    },
     paragraph: {
         marginVertical: 8,
         lineHeight: 20,

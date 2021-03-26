@@ -1,5 +1,5 @@
 import React, {useState} from 'react';
-import {StyleSheet, Button, TextInput, View, Modal, TouchableOpacity, Text} from 'react-native';
+import {StyleSheet, Button, TextInput, View, FlatList, TouchableOpacity, Text} from 'react-native';
 import {Formik} from 'formik';
 import CheckBox from '@react-native-community/checkbox';
 import { Ionicons } from '@expo/vector-icons';
@@ -7,7 +7,7 @@ import {globalStyles} from '../constants/styles';
 import Colors from '../constants/colors';
 import Numerics from '../constants/numerics';
 import Task from './Task';
-import { FlatList } from 'react-native-gesture-handler';
+import {HideWithKeyboard} from 'react-native-hide-with-keyboard';
 
 let screenMap = new Map();
 screenMap['didnt'] = "Didn't";
@@ -58,46 +58,63 @@ export default function TaskAdder({addTask, closeModalHandler}){
                         {/* <Button title="Back" color={Colors.purple} onPress={()=>{
                             props.setModalVisible(false);
                         }}/> */}
-                        <TextInput
-                            style={globalStyles.input}
-                            value={formikProps.values.title}
-                            placeholder="Task Title"
-                            onChangeText={formikProps.handleChange('title')}
-                            onBlur={formikProps.handleBlur('title')}
-                        />
-                        <TextInput
-                            value={formikProps.values.description}
-                            style={globalStyles.input}
-                            placeholder='Task Description'
-                            onChangeText={formikProps.handleChange('description')}
-                            onBlur={formikProps.handleBlur('description')}
-                            multiline ={true}
-                            
-                        />
-                        <FlatList
-                            keyExtractor={(item, index) => item.key}
-                            data={screenList}
-                            extraData={screenList}
-                            renderItem={({ item }) => (
-                            <TouchableOpacity onPress={()=>{
-                                checkScreen(item.screen)
-                                }}>
-                                <View style={globalStyles.checkList}>    
-                                    <CheckBox
-                                        value={item.checked}
-                                        onValueChange={()=>{
-                                            checkScreen(item.screen)
-                                        }}
-                                        tintColors={{true:Colors.primary}}
-                                    />
-                                    <Text style={{fontSize: 24, fontWeight: 'bold'}}>{screenMap[item.screen]}</Text>
-                                </View>
-                                </TouchableOpacity>
-                            )}
-                        />
+                        <View style={{
+                            flex: 1,
+                            alignItems: 'center',
+                            paddingHorizontal: 20
+                        }}>
+                            <TextInput
+                                style={globalStyles.input}
+                                value={formikProps.values.title}
+                                placeholder="Task Title"
+                                onChangeText={formikProps.handleChange('title')}
+                                onBlur={formikProps.handleBlur('title')}
+                            />
+                        </View>
+                        <View style={{
+                            flex: 3,
+                            alignItems: 'center',
+                            paddingHorizontal: 20
+                        }}>
+                            <TextInput
+                                value={formikProps.values.description}
+                                style={globalStyles.inputBody}
+                                multiline minHeight={240}
+                                placeholder='Task Description'
+                                onChangeText={formikProps.handleChange('description')}
+                                onBlur={formikProps.handleBlur('description')}
+                                multiline ={true}
+                                textAlign = {'left'}
+                                textAlignVertical = {'top'}
+                            />
+                        </View>
+                        <HideWithKeyboard style={{paddingBottom: 120, justifyContent: 'center', }}>
+                            <FlatList
+                                
+                                keyExtractor={(item, index) => item.key}
+                                data={screenList}
+                                extraData={screenList}
+                                renderItem={({ item }) => (
+                                <TouchableOpacity onPress={()=>{
+                                    checkScreen(item.screen)
+                                    }}>
+                                    <View style={globalStyles.checkList}>    
+                                        <CheckBox
+                                            value={item.checked}
+                                            onValueChange={()=>{
+                                                checkScreen(item.screen)
+                                            }}
+                                            tintColors={{true:Colors.primary}}
+                                        />
+                                        <Text style={{fontSize: 24, fontWeight: 'bold'}}>{screenMap[item.screen]}</Text>
+                                    </View>
+                                    </TouchableOpacity>
+                                )}
+                            />
+                        </HideWithKeyboard>
                         <View style={styles.submit}>
                             <TouchableOpacity style={{paddingVertical: 10, paddingHorizontal: 10}} onPress={formikProps.handleSubmit}>
-                                <Ionicons name="enter-outline" size={36} color="grey" />
+                                <Ionicons name="enter-outline" size={60} color="grey" />
                             </TouchableOpacity>
                         </View>
                         {/* <Button title='submit' color={Colors.purple} style={{paddingVertical: 10}} onPress={formikProps.handleSubmit}/> */}

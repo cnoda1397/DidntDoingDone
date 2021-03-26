@@ -147,14 +147,14 @@ const doing = (props) =>{
                         </View>
                     )}
                 />
-                <Button title="refresh screen" onPress={()=>{
+                {/* <Button title="refresh screen" onPress={()=>{
                     console.log('refreshing')
                     refreshScreen();
                     }}/>
                 <Button title="Kill List" onPress={()=>{
                     console.log('Allah Ahkbar')
                     killList();
-                    }}/>
+                    }}/> */}
                 {/* <Button title="*" onPress={()=>console.log(JSON.stringify(props.route.params))}/> in case params gets messed up again*/}
                 <View style={styles.addButton}>
                     <TouchableOpacity onPress = {() => {
