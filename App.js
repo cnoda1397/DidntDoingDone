@@ -14,90 +14,161 @@ import {globalStyles} from './constants/styles';
 import Colors from './constants/colors';
 import {TaskInfo} from './components/TaskAdder';
 import Task from './components/Task';
-// Redux
-import { createStore } from 'redux'
-import { Provider } from 'react-redux'
 import SwipeNav from './navigation/SwipeNav';
 
-const Stack = createStackNavigator();
-let newList = [];
-let index = 0;
-const initialState = {
-    refresh: true,
-    didntList: [{title: 'I am Iron Man', description: 'I Love You 3000', key: '616', screen: 'didnt'}],
-    doingList: [{title: 'I am Iron Man', description: 'I Love You 3000', key: '616', screen: 'doing'}],
-    doneList: [{title: 'I am Iron Man', description: 'I Love You 3000', key: '616', screen: 'done'}],
-}
-const reducer = (state = initialState, action) => {
-    
-    let refreshScreen = !state.refresh;
-    switch (action.type) {
-        case 'ADD':
-            let task = action.payload;
-            task.key = Date.now().toString();
-            state.didntList.push(task);
-            //alert(JSON.stringify(action.payload));
-            //console.log(JSON.stringify(state.counter));
-            break;
-        case 'DELETE':
-            newList = state.didntList.filter((obj) => obj.key !== action.payload.key);
-            state.didntList = newList;
-            break;
-        case 'UPDATE':
-            newList = state.didntList;
-            index = newList.findIndex(obj => obj.key === action.payload.key);
-            newList[index] = action.payload;
-            state.didntList = newList;
-            alert(JSON.stringify(newList))
-            break;
+import * as SQLite from 'expo-sqlite';
+//import SQLite from 'react-native-sqlite-2';
+// SQL stuff to store data in a database
+let doOnce = true;
+const database_name = 'taskDB'
+const database_version = '1.0'
+const database_displayname = 'TaskList Database'
+const database_size = 200000
+let db = SQLite.openDatabase(database_name);
+let temp = 'didnt'
+class App extends React.Component {
+    constructor(props){
+        super(props)
+        this.state = {
+            refresh: true,
+            didntList: [],
+            doingList: [],
+            doneList: []
+        }
 
-        default:
-            return state;
+        this.populateDB();
+        // db.transaction(tx =>{
+        //     tx.executeSql(tx.executeSql('select * from didnt', [], (_, {rows: {_array}}) => this.setState({didntList: _array})));
+        // })
     }
-    const newState = {refresh: refreshScreen, didntList: state.didntList, doingList: state.doingList, doneLsit: state.doneList};
-    return newState;
-}
 
-const addToList = ({task, list}) =>{
-    newList = list;
-    list.push(task);
-    return newList;
-}
+    populateDB = () => {
+        db.transaction(tx =>{
+            //tx.executeSql('drop table didnt if exists');
+            tx.executeSql('create table if not exists didnt (title text, description text, key text, screen text);', [], this.successCB, this.errorCB);
+            //tx.executeSql('delete from didnt where screen = ?', ['didnt'])
+            tx.executeSql('create table if not exists doing (title text, description text, key text, screen text);', [], this.successCB, this.errorCB);
+            tx.executeSql('create table if not exists done (title text, description text, key text, screen text);', [], this.successCB, this.errorCB);
+            //tx.executeSql('insert into doing (title, description, key, screen) values (?, ?, ?, ?)', ['Hello World', 'I know you hear me', Date.now().toString(), 'didnt']);
+            //tx.executeSql('insert into doing (title, description, key, screen) values (?, ?, ?, ?)', ['good bye', 'I know you hear me', Date.now().toString(), 'didnt']);
+            //tx.executeSql('select * from didnt', [], (_, { rows }) => console.log(JSON.stringify(rows))) ;
+            
+            //tx.executeSql('delete from ' + temp + ' where title = ?;', ['H']);
+            tx.executeSql('select * from ' + 'didnt', [], (_, { rows }) => console.log(JSON.stringify(rows))) ;
 
-const deleteFromList = ({task, list}) =>{
-    newList = list.filter((obj)=>obj.key !== task.key)
-    return newList;
-}
-const updateList = ({task, list}) =>{
-    newList = state.didntList;
-    index = newList.findIndex(obj => obj.key === action.payload.key);
-    newList[index] = action.payload;
-    return newList;
-}
-{/* algorithm:
-    on details screen, make copy of original screen value or maybe use *initialValue?*
-    On submission, compare the old screen to the new screen. If they match, use update.
-    If they don't, use move -> pass in the first and new list destinations.
- */}
-const moveToNewList = ({task, prevList, nextList}) =>{
-    oldList = deleteFromList({task, prevList});
-    newList = nextList;
-    newList.push(task);
-    return {old:oldList, new:newList};
-}
+        });
+        console.log('populated');
+    }
 
-const store = createStore(reducer)
-export default class App extends React.Component {
- 
-    
+    errorCB = err => {
+        console.error('error:', err)
+        return false
+        }
+
+    successCB = () => {
+        console.log('SQL executed ...')
+    }
+    insertTask = task => {
+        console.log('Beginning of insertDidnt');
+        db.transaction(tx =>{
+            tx.executeSql('insert into didnt (title, description, key, screen) values (?, ?, ?, ?)', [task.title, task.description, task.key, task.screen]);
+            tx.executeSql('select * from didnt', [], (_, { rows }) => console.log(JSON.stringify(rows))) ;
+        });
+        console.log('End of insertTask');
+    }
+
+    queryDidnt = () => {
+        console.log('queryDidnt');
+        db.transaction(tx =>{
+            tx.executeSql('select * from didnt', null, 
+            (txObj, { rows: { _array } }) => this.setState({testData: _array}), this.errorCB);
+        });
+        console.log(JSON.stringify(this.state.testData))
+        console.log('//////////////////////////////////////')
+    }
+    queryDidntSuccess = (tx, results) => {
+        console.log(JSON.stringify(results.rows.item(0)));
+    }
+
+    setDidnt = () =>{
+        let list = [];
+        db.transaction(tx =>{tx.executeSql(tx.executeSql('select * from didnt', [], (_, {rows: {_array}}) => {list = [..._array]}))});
+        console.log('setDidnt:\n', JSON.stringify(list));
+        return list;
+    }
+    // REDUX stuff to create a shared state between all screens
+    // list = [];
+    // index = 0;
+    // map = new Map;
+    // //initialState = this.state;
+    // initialState = {
+    //     refresh: true,
+    //     didntList: [{title: 'I am Iron Man', description: 'I Love You 3000', key: '616', screen: 'didnt'}],
+    //     doingList: [{title: 'I am Batman', description: 'I am the NIGHT', key: '1', screen: 'doing'}],
+    //     doneList: [{title: 'I am Groot', description: 'I am Groot', key: '1610', screen: 'done'}],
+    // }
+
+    // reducer = (state = this.initialState, action) => {
+    //     let refreshScreen = !state.refresh;
+    //     let task = action.payload;
+    //     switch (action.type) {
+    //         case 'ADD':
+    //             task.key = Date.now().toString();
+    //             //newList.push(task);
+    //             this.insertTask(task);
+    //             break;
+    //         case 'DELETE':
+    //             list = ((obj)=>obj.key !== task.key)
+    //             break;
+    //         case 'UPDATE':
+    //             index 
+    //             break;
+    //         // case 'MOVE':
+    //         //     let movefrom = [];
+    //         //     switch (action.prevList){
+    //         //         case 'didnt':
+    //         //             movefrom = state.didntList;
+    //         //             break;
+    //         //         case 'doing':
+    //         //             movefrom = state.doingList;
+    //         //             break;
+    //         //         case 'done':
+    //         //             movefrom = state.doneList;
+    //         //             break;
+    //         //     }
+    //         default:
+    //             return state;
+    //     }
+    //     return state;
+    // }
+
+// const moveToNewList = ({task, prevList, nextList}) =>{
+//     oldList = deletefromList({task, prevList});
+//     newList = nextList;
+//     newList.push(task);
+//     return {old:oldList, new:newList};
+// }
+
+    //store = createStore(this.reducer)
+
+     Stack = createStackNavigator();
+
+    componentDidMount(){
+        //this.loadAndQueryDB();
+        console.log('Mounted');
+    }
     render(){
         return (
-            <Provider store = {store} >
-                <NavigationContainer>
+            <NavigationContainer>
                     <SwipeNav/>
-                </NavigationContainer>
-            </Provider>
+            </NavigationContainer>
+            // <Provider store = {this.store} >
+            //     <NavigationContainer>
+            //         <SwipeNav/>
+            //     </NavigationContainer>
+            // </Provider>
         );
     }
 }
 
+export default App

@@ -5,6 +5,7 @@ import Colors from './colors';
 export const globalStyles = StyleSheet.create({
     screen: {
         flex: 1,
+        height: '100%'
         // borderWidth: 5,
     },
     container: {
