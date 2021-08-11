@@ -15,7 +15,7 @@ import Colors from '../constants/colors';
 import TaskAdder from '../components/TaskAdder'
 
 import * as SQLite from 'expo-sqlite';
-
+// Same implementation as 'didnt' screen, but changes where data is stored
 const database_name = 'taskDB'
 const database_version = '1.0'
 const database_displayname = 'TaskList Database'
@@ -23,36 +23,15 @@ const database_size = 200000
 let db = SQLite.openDatabase(database_name);
 const doing = (props) =>{
     let navigation = props.navigation;
-    //modal visibility, the array of tasks, boolean switch for when tasks are updated
     const [modalVisible, setModalVisible] = useState(false); 
     const [list, setList] = useState([]);
     const [refresh, setRefresh] = useState(false);
-    
-    // Function that updates a task in the TaskList
-    // finds the task index by its key, updates the array instance, then updates setRefresh
-    //      so the FlatList knows to rerender its items to the updated values.
-    // const updateList = (title, description, key) => {
-    //     // let index = taskList.findIndex(obj => obj.key === key);
-    //     // taskList[index] = {title, description, key};
-    //     props.editList({title: title, description: description, key: key});
-    //     setRefresh(!refresh);
-    // }
-
-    // Function that adds a task to the TaskList
-    // returns the array with the new task appended
     const closeModalHandler = () =>{
         setModalVisible(false);
     }
-    // const addTask = (task) =>{
-    //     task.key = Date.now().toString();
-    //     setModalVisible(false);
-    //     props.addToList(task);
-    // }
     const addTask = (task) =>{
         task.key = Date.now().toString();
         setModalVisible(false);
-        //alert(JSON.stringify(props.didntList));
-        //props.addToList(task);
         db.transaction(tx =>{
             tx.executeSql('insert into ' + task.screen + ' (title, description, key, screen) values (?, ?, ?, ?)', [task.title, task.description, task.key, task.screen]);
             tx.executeSql('select * from doing', [], (_, {rows: {_array}}) => {
@@ -61,12 +40,6 @@ const doing = (props) =>{
             });
 
         });
-        // db.transaction(tx => {
-        //     tx.executeSql('select * from didnt where key not = ?', ['123456789'], (_, {rows: {_array}}) => setList(_array));
-        //     tx.executeSql('drop database taskDB;');
-        //});
-        //db = SQLite.openDatabase(database_name);
-        //setRefresh(!refresh);
     }
     const refreshScreen = () =>{
         db.transaction(tx => {
@@ -93,33 +66,6 @@ const doing = (props) =>{
             });
           });
       }, []);
-    // React.useEffect(() => {
-    //     if(props.route.params?.terminate){
-    //         alert('delete');
-    //         setRefresh(!refresh);
-    //         props.decreaseCounter(props.route.params)
-    //         // setTaskList(deleteTask(props.route.params.key));
-            
-    //         props.route.params.terminate = !props.route.params.terminate;
-    //     }
-    //     else {
-    //         if(props.route.params?.description || props.route.params?.title){
-    //         alert('refresh');
-    //         console.log(JSON.stringify(props.route.params));
-    //         const {title, description, key} = props.route.params;
-    //         props.editList({title: title, description: description, key: key});
-    //         } 
-    //     }
-    //     setRefresh(!refresh);
-    // }, [props.route.params?.terminate, props.route.params?.title, props.route.params?.description, props.route.params?.refresh])
-
-    // Function that deletes a task from the TaskList
-    // returns the array, but filters out any task with the passed key
-    // const deleteTask = (key) =>{
-    //     console.log("removing", key);
-    //     //console.log(JSON.stringify(taskList));
-    //     return taskList.filter((obj) => obj.key !== key);
-    // }
 
     return(
         <View style={styles.screen}>

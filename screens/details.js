@@ -28,7 +28,7 @@ let screenMap = new Map();
 screenMap['didnt'] = "Didn't";
 screenMap['doing'] = 'Doing';
 screenMap['done'] = 'Done'
-// takes in task with values title, description, key; [setFunctions for each?]
+// takes in task with values title, description, key; [setFunctions for each]
 const Details = (props) => {
     const {title, description, key, screen} = props.route.params;
     const [newTitle, setnewTitle] = useState(title);
@@ -36,7 +36,7 @@ const Details = (props) => {
     const [newScreen, setNewScreen] = useState(screen);
     const [refresh, setRefresh] = useState(false);
     const [hide, setHide] = useState(false);
-    
+    // use state to ensure that when any checkbox is selected, the others are unchecked
     const [screenList, setScreenList] = useState([
         {screen:'didnt', checked: false, key:'1'},
         {screen:"doing", checked: false, key:'2'},
@@ -57,6 +57,7 @@ const Details = (props) => {
         setScreenList(list);
         setRefresh(!refresh);
     }
+    // hide the submit and delete UI buttons when the keyboard is in focus
     React.componentDidMount = () =>{
         const keyboardHider = Keyboard.addListener('keyboardDidShow', typing())
         const keyboardShower = Keyboard.addListener('keyboardDidShow', notTyping())
@@ -74,8 +75,6 @@ const Details = (props) => {
             })
             setRefresh(!refresh);          
         })
-        // const keyboardUp = Keyboard.addListener('keyboardWillShow', typing())
-        // const keyboardDown = Keyboard.addListener('keyboardWillHide', notTyping())
     }, [])
     const typing = () => {
         console.log('typing');
@@ -87,48 +86,44 @@ const Details = (props) => {
     }
     return (
         <View style={globalStyles.screen}>
-            {/* <KeyboardAwareScrollView 
-                style={{backgroundColor: 'white'}}
-                resetScrollToCoords={{ x: 0, y: 0 }}
-                contentContainerStyle={globalStyles.screen}
-                scrollEnabled={true}
-            > */}
             <ScrollView>
                 {/*Title*/}
-            <View style={{
-                flex: 1,
-                alignItems: 'center',
-                padding: 20
-                }}>
-                <TextInput style={globalStyles.input}
-                    value = {newTitle}
-                    onChangeText={(value) => setnewTitle(value)}
-                    editable = {true}
-                    placeholder = 'No Title Entered Yet'
-                    placeholderTextColor = 'grey'
-                />
-            </View>
+                <View style={{
+                    flex: 1,
+                    alignItems: 'center',
+                    padding: 20
+                    }}>
+                    <TextInput style={globalStyles.input}
+                        value = {newTitle}
+                        onChangeText={(value) => setnewTitle(value)}
+                        editable = {true}
+                        placeholder = 'No Title Entered Yet'
+                        placeholderTextColor = 'grey'
+                    />
+                </View>
 
-            {/*Description*/}
-            <View style={{
-                flex: 3,
-                alignItems: 'center',
-                padding: 20
-                }}>
-                <TextInput style={globalStyles.inputBody}
-                    multiline minHeight = {200}
-                    value = {newDescription}
-                    onChangeText={(value) => setNewDescription(value)}
-                    editable = {true}
-                    multiline ={true}
-                    textAlign = {'left'}
-                    textAlignVertical = {'top'}
-                    placeholder = 'No Description Entered Yet'
-                    placeholderTextColor = 'grey'
-                />
-            </View>
+                {/*Description*/}
+                <View style={{
+                    flex: 3,
+                    alignItems: 'center',
+                    padding: 20
+                    }}>
+                    <TextInput style={globalStyles.inputBody}
+                        multiline minHeight = {200}
+                        value = {newDescription}
+                        onChangeText={(value) => setNewDescription(value)}
+                        editable = {true}
+                        multiline ={true}
+                        textAlign = {'left'}
+                        textAlignVertical = {'top'}
+                        placeholder = 'No Description Entered Yet'
+                        placeholderTextColor = 'grey'
+                    />
+                </View>
             </ScrollView>
-            
+
+            {/*UI buttons for updating and deleting
+                They are hidden when the keyboard is pulled up*/}
             <View>
                 <HideWithKeyboard>
                 <FlatList
@@ -155,12 +150,9 @@ const Details = (props) => {
                         </TouchableOpacity>
                     )}
                 />
-                
+                {/*Update the database when a button is used*/}
                 <View style={styles.buttonContainer}>
                     <TouchableOpacity style={styles.button} onPress = {() => {
-                        //props.navigation.navigate('Didnt', {terminate: true, key: key, title: null, description: null})
-                        //props.deleteFromList({title: newTitle, description: newDescription, key: key, screen: newScreen});
-                        //props.navigation.navigate('Didnt', {refresh: true});
                         db.transaction(tx=>{
                             tx.executeSql('delete from ' + screen + ' where key = ?', [key]);
                             tx.executeSql('select * from didnt', [], (_, {rows: {_array}}) =>
@@ -172,7 +164,6 @@ const Details = (props) => {
                         <Text>Delete </Text>
                     </TouchableOpacity>
                     <TouchableOpacity style={styles.button} onPress = {() => {
-                        //props.navigation.navigate('Didnt', {title: newTitle, description: newDescription, key: key, terminate: null}) 
                         if(newScreen !== oldScreen){
                             db.transaction(tx=>{
                                 tx.executeSql('delete from ' + oldScreen + ' where key = ?', [key]);
@@ -212,52 +203,3 @@ const styles = StyleSheet.create({
 
 export default Details;
 
-
-
-
-{/* <TouchableOpacity onPress={()=>{
-                checkScreen(screenList[0].screen)
-                }}>
-                <View style={globalStyles.checkList}>    
-                    <CheckBox
-                        value={screenList[0].checked}
-                        onValueChange={(check)=>{
-                            if(check) {checkScreen(screenList[0].screen)}
-                            else {setRefresh(!refresh)}
-                            
-                        }}
-                        tintColors={{true:Colors.primary}}
-                    />
-                    <Text style={{fontSize: 24, fontWeight: 'bold'}}>{screenMap[screenList[0].screen]}</Text>
-                </View>
-            </TouchableOpacity>
-            <TouchableOpacity onPress={()=>{
-                checkScreen(screenList[1].screen)
-                }}>
-                <View style={globalStyles.checkList}>    
-                    <CheckBox
-                        value={screenList[1].checked}
-                        onValueChange={(check)=>{
-                            if(check) {checkScreen(screenList[1].screen)}
-                            else {setRefresh(!refresh)}
-                        }}
-                        tintColors={{true:Colors.primary}}
-                    />
-                    <Text style={{fontSize: 24, fontWeight: 'bold'}}>{screenMap[screenList[1].screen]}</Text>
-                </View>
-            </TouchableOpacity>
-            <TouchableOpacity onPress={()=>{
-                checkScreen(screenList[2].screen)
-                }}>
-                <View style={globalStyles.checkList}>    
-                    <CheckBox
-                        value={screenList[2].checked}
-                        onValueChange={(check)=>{
-                            if(check) {checkScreen(screenList[2].screen)}
-                            else {setRefresh(!refresh)}
-                        }}
-                        tintColors={{true:Colors.primary}}
-                    />
-                    <Text style={{fontSize: 24, fontWeight: 'bold'}}>{screenMap[screenList[2].screen]}</Text>
-                </View>
-            </TouchableOpacity> */}

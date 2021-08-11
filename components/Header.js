@@ -1,8 +1,8 @@
-import { NativeAppEventEmitter } from "react-native";
 import React from 'react';
 import {View, Text, StyleSheet} from 'react-native';
 import Colors from '../constants/colors';
 
+//Returns an app header 
 const Header = props=> {
     return (
         <View style={styles.header}>

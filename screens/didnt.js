@@ -22,26 +22,20 @@ const database_version = '1.0'
 const database_displayname = 'TaskList Database'
 const database_size = 200000
 let db = SQLite.openDatabase(database_name);
-
+// 
 const didnt = (props) =>{
     let navigation = props.navigation;
-    //modal visibility, the array of tasks, boolean switch for when tasks are updated
+    //modal visibility; the array of tasks; boolean switch for when tasks are updated
     const [modalVisible, setModalVisible] = useState(false); 
     const [list, setList] = useState([]);
     const [refresh, setRefresh] = useState(false);
     const closeModalHandler = () =>{
         setModalVisible(false);
     }
-    // const addTask = (task =>{
-    //     setModalVisible(false);
-    //     props.addToList(task);
-    //     setRefresh(!refresh);
-    // })
+    // add task to SQLite DB
     const addTask = (task) =>{
         task.key = Date.now().toString();
         setModalVisible(false);
-        //alert(JSON.stringify(props.didntList));
-        //props.addToList(task);
         db.transaction(tx =>{
             tx.executeSql('insert into ' + task.screen + ' (title, description, key, screen) values (?, ?, ?, ?)', [task.title, task.description, task.key, task.screen]);
             tx.executeSql('select * from didnt', [], (_, {rows: {_array}}) => {
@@ -50,13 +44,8 @@ const didnt = (props) =>{
             });
 
         });
-        // db.transaction(tx => {
-        //     tx.executeSql('select * from didnt where key not = ?', ['123456789'], (_, {rows: {_array}}) => setList(_array));
-        //     tx.executeSql('drop database taskDB;');
-        //});
-        //db = SQLite.openDatabase(database_name);
-        //setRefresh(!refresh);
     }
+    // Refresh the screen so the view has updated data
     const refreshScreen = () =>{
         db.transaction(tx => {
             tx.executeSql(tx.executeSql('select * from didnt', [], (_, {rows: {_array}}) => setList(_array)));
@@ -71,13 +60,13 @@ const didnt = (props) =>{
             });
           });
       }, []);
+
     return(
         <View style={styles.screen}>
             <Modal visible={modalVisible} animationType='slide'>
             <TaskAdder addTask={addTask} closeModalHandler={closeModalHandler}/>
             </Modal>
             <View style={styles.listContainer}>
-                {/* <Text>{JSON.stringify(props.counter)}</Text>         */}
                 <FlatList 
                     keyExtractor={(item, index) => item.key}
                     data={list}
@@ -99,11 +88,7 @@ const didnt = (props) =>{
                         </View>
                     )}
                 />
-                {/* <Button title="refresh screen" onPress={()=>{
-                    console.log('refreshing')
-                    refreshScreen();
-                    }}/> */}
-                {/* <Button title="*" onPress={()=>console.log(JSON.stringify(props.route.params))}/> in case params gets messed up again*/}
+                
                 <View style={styles.addButton}>
                     <TouchableOpacity onPress = {() => {
                         setModalVisible(true)
