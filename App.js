@@ -25,7 +25,7 @@ const database_version = '1.0'
 const database_displayname = 'TaskList Database'
 const database_size = 200000
 let db = SQLite.openDatabase(database_name);
-let temp = 'didnt'
+//
 class App extends React.Component {
     constructor(props){
         super(props)
@@ -37,11 +37,7 @@ class App extends React.Component {
         }
 
         this.populateDB();
-        // db.transaction(tx =>{
-        //     tx.executeSql(tx.executeSql('select * from didnt', [], (_, {rows: {_array}}) => this.setState({didntList: _array})));
-        // })
     }
-
     populateDB = () => {
         db.transaction(tx =>{
             //tx.executeSql('drop table didnt if exists');
@@ -49,8 +45,8 @@ class App extends React.Component {
             //tx.executeSql('delete from didnt where screen = ?', ['didnt'])
             tx.executeSql('create table if not exists doing (title text, description text, key text, screen text);', [], this.successCB, this.errorCB);
             tx.executeSql('create table if not exists done (title text, description text, key text, screen text);', [], this.successCB, this.errorCB);
-            //tx.executeSql('insert into doing (title, description, key, screen) values (?, ?, ?, ?)', ['Hello World', 'I know you hear me', Date.now().toString(), 'didnt']);
-            //tx.executeSql('insert into doing (title, description, key, screen) values (?, ?, ?, ?)', ['good bye', 'I know you hear me', Date.now().toString(), 'didnt']);
+            //tx.executeSql('insert into doing (title, description, key, screen) values (?, ?, ?, ?)', ['Hello World', 'Can you hear me?', Date.now().toString(), 'didnt']);
+            //tx.executeSql('insert into doing (title, description, key, screen) values (?, ?, ?, ?)', ['good bye', 'I know you hear me.', Date.now().toString(), 'didnt']);
             //tx.executeSql('select * from didnt', [], (_, { rows }) => console.log(JSON.stringify(rows))) ;
             
             //tx.executeSql('delete from ' + temp + ' where title = ?;', ['H']);
@@ -69,22 +65,17 @@ class App extends React.Component {
         console.log('SQL executed ...')
     }
     insertTask = task => {
-        console.log('Beginning of insertDidnt');
         db.transaction(tx =>{
             tx.executeSql('insert into didnt (title, description, key, screen) values (?, ?, ?, ?)', [task.title, task.description, task.key, task.screen]);
             tx.executeSql('select * from didnt', [], (_, { rows }) => console.log(JSON.stringify(rows))) ;
         });
-        console.log('End of insertTask');
     }
 
     queryDidnt = () => {
-        console.log('queryDidnt');
         db.transaction(tx =>{
             tx.executeSql('select * from didnt', null, 
             (txObj, { rows: { _array } }) => this.setState({testData: _array}), this.errorCB);
         });
-        console.log(JSON.stringify(this.state.testData))
-        console.log('//////////////////////////////////////')
     }
     queryDidntSuccess = (tx, results) => {
         console.log(JSON.stringify(results.rows.item(0)));
@@ -93,68 +84,11 @@ class App extends React.Component {
     setDidnt = () =>{
         let list = [];
         db.transaction(tx =>{tx.executeSql(tx.executeSql('select * from didnt', [], (_, {rows: {_array}}) => {list = [..._array]}))});
-        console.log('setDidnt:\n', JSON.stringify(list));
         return list;
     }
-    // REDUX stuff to create a shared state between all screens
-    // list = [];
-    // index = 0;
-    // map = new Map;
-    // //initialState = this.state;
-    // initialState = {
-    //     refresh: true,
-    //     didntList: [{title: 'I am Iron Man', description: 'I Love You 3000', key: '616', screen: 'didnt'}],
-    //     doingList: [{title: 'I am Batman', description: 'I am the NIGHT', key: '1', screen: 'doing'}],
-    //     doneList: [{title: 'I am Groot', description: 'I am Groot', key: '1610', screen: 'done'}],
-    // }
-
-    // reducer = (state = this.initialState, action) => {
-    //     let refreshScreen = !state.refresh;
-    //     let task = action.payload;
-    //     switch (action.type) {
-    //         case 'ADD':
-    //             task.key = Date.now().toString();
-    //             //newList.push(task);
-    //             this.insertTask(task);
-    //             break;
-    //         case 'DELETE':
-    //             list = ((obj)=>obj.key !== task.key)
-    //             break;
-    //         case 'UPDATE':
-    //             index 
-    //             break;
-    //         // case 'MOVE':
-    //         //     let movefrom = [];
-    //         //     switch (action.prevList){
-    //         //         case 'didnt':
-    //         //             movefrom = state.didntList;
-    //         //             break;
-    //         //         case 'doing':
-    //         //             movefrom = state.doingList;
-    //         //             break;
-    //         //         case 'done':
-    //         //             movefrom = state.doneList;
-    //         //             break;
-    //         //     }
-    //         default:
-    //             return state;
-    //     }
-    //     return state;
-    // }
-
-// const moveToNewList = ({task, prevList, nextList}) =>{
-//     oldList = deletefromList({task, prevList});
-//     newList = nextList;
-//     newList.push(task);
-//     return {old:oldList, new:newList};
-// }
-
-    //store = createStore(this.reducer)
-
      Stack = createStackNavigator();
 
     componentDidMount(){
-        //this.loadAndQueryDB();
         console.log('Mounted');
     }
     render(){
@@ -162,11 +96,6 @@ class App extends React.Component {
             <NavigationContainer>
                     <SwipeNav/>
             </NavigationContainer>
-            // <Provider store = {this.store} >
-            //     <NavigationContainer>
-            //         <SwipeNav/>
-            //     </NavigationContainer>
-            // </Provider>
         );
     }
 }

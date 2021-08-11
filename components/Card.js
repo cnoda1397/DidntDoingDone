@@ -4,7 +4,7 @@ import {View, Text, Button, TextInput, StyleSheet} from 'react-native';
 import Colors from '../constants/colors';
 import Numerics from '../constants/numerics';
 
-
+// Returns a styled object for a 3D shadow effect
 const Card = props=>{
     return <View style={{...styles.card, ...props.style}}>
         {props.children}

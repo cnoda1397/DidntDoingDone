@@ -14,6 +14,8 @@ screenMap['didnt'] = "Didn't";
 screenMap['doing'] = 'Doing';
 screenMap['done'] = 'Done'
 export default function TaskAdder({addTask, closeModalHandler}){
+    // addTask: 
+    // use state to ensure that when any checkbox is selected, the others are unchecked
     const [screenList, setScreenList] = useState([
         {screen:'didnt', checked: true,key:'1'},
         {screen:"doing", checked: false,key:'2'},
@@ -36,13 +38,14 @@ export default function TaskAdder({addTask, closeModalHandler}){
         setScreenList(list);
         setRefresh(!refresh);
     }
+
     return(
         <View style={globalStyles.screen}>
+            {/*use Formik to manage value inputs for the task descriptors*/}
             <Formik 
                 initialValues={{title: '', description: '', key: '', screen: 'didnt'}}
                 onSubmit= {(values, actions) => {
                     values.screen = finalScreen;
-                    console.log('End Of TaskAdder\n');
                     actions.resetForm();
                     addTask(values);
                 }}
@@ -55,9 +58,7 @@ export default function TaskAdder({addTask, closeModalHandler}){
                             </TouchableOpacity>
                             <Text style={{fontSize: 24, fontWeight: 'bold'}}>Add Task to Board</Text>
                         </View>
-                        {/* <Button title="Back" color={Colors.purple} onPress={()=>{
-                            props.setModalVisible(false);
-                        }}/> */}
+
                         <View style={{
                             flex: 1,
                             alignItems: 'center',
@@ -71,6 +72,7 @@ export default function TaskAdder({addTask, closeModalHandler}){
                                 onBlur={formikProps.handleBlur('title')}
                             />
                         </View>
+
                         <View style={{
                             flex: 3,
                             alignItems: 'center',
@@ -88,38 +90,38 @@ export default function TaskAdder({addTask, closeModalHandler}){
                                 textAlignVertical = {'top'}
                             />
                         </View>
+                        {/*UI buttons for updating and deleting
+                        They are hidden when the keyboard is pulled up*/}
                         <HideWithKeyboard style={{paddingBottom: 120, justifyContent: 'center', }}>
-                            <FlatList
-                                
+                            <FlatList 
                                 keyExtractor={(item, index) => item.key}
                                 data={screenList}
                                 extraData={screenList}
                                 renderItem={({ item }) => (
-                                <TouchableOpacity onPress={()=>{
-                                    checkScreen(item.screen)
-                                    }}>
-                                    <View style={globalStyles.checkList}>    
-                                        <CheckBox
-                                            value={item.checked}
-                                            onValueChange={()=>{
-                                                checkScreen(item.screen)
-                                            }}
-                                            tintColors={{true:Colors.primary}}
-                                        />
-                                        <Text style={{fontSize: 24, fontWeight: 'bold'}}>{screenMap[item.screen]}</Text>
-                                    </View>
+                                    <TouchableOpacity onPress={()=>{
+                                        checkScreen(item.screen)
+                                        }}>
+                                        <View style={globalStyles.checkList}>    
+                                            <CheckBox
+                                                value={item.checked}
+                                                onValueChange={()=>{
+                                                    checkScreen(item.screen)
+                                                }}
+                                                tintColors={{true:Colors.primary}}
+                                            />
+                                            <Text style={{fontSize: 24, fontWeight: 'bold'}}>{screenMap[item.screen]}</Text>
+                                        </View>
                                     </TouchableOpacity>
                                 )}
                             />
                         </HideWithKeyboard>
+
                         <View style={styles.submit}>
                             <TouchableOpacity style={{paddingVertical: 10, paddingHorizontal: 10}} onPress={formikProps.handleSubmit}>
                                 <Ionicons name="enter-outline" size={60} color="grey" />
                             </TouchableOpacity>
-                        </View>
-                        {/* <Button title='submit' color={Colors.purple} style={{paddingVertical: 10}} onPress={formikProps.handleSubmit}/> */}
-                        
-            </View>
+                        </View>                        
+                    </View>
                 )}
             </Formik>
         </View>

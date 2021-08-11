@@ -27,6 +27,8 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "description": "A project management board for mobile users. Keep track of tasks you need to start, are currently working on,  or have already completed.",
+    "githubUrl": "https://github.com/cnoda1397/DidntDoingDone"
   }
 }
