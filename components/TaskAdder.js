@@ -5,8 +5,8 @@ import CheckBox from '@react-native-community/checkbox';
 import { Ionicons } from '@expo/vector-icons';
 import {globalStyles} from '../constants/styles';
 import Colors from '../constants/colors';
-import Numerics from '../constants/numerics';
-import Task from './Task';
+//import Numerics from '../constants/numerics';
+//import Task from './Task';
 import {HideWithKeyboard} from 'react-native-hide-with-keyboard';
 
 let screenMap = new Map();
@@ -85,7 +85,6 @@ export default function TaskAdder({addTask, closeModalHandler}){
                                 placeholder='Task Description'
                                 onChangeText={formikProps.handleChange('description')}
                                 onBlur={formikProps.handleBlur('description')}
-                                multiline ={true}
                                 textAlign = {'left'}
                                 textAlignVertical = {'top'}
                             />

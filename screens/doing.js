@@ -1,26 +1,17 @@
 // React & React Native
 import React, {useState, useEffect} from 'react';
 import {View, StyleSheet, Text, TextInput, FlatList, Button, Modal, TouchableHighlight, TouchableOpacity} from 'react-native'
-import {Formik} from 'formik';
 import { Ionicons } from '@expo/vector-icons';
-// React Navigation
-import {CommonActions} from '@react-navigation/native';
-import {createStackNavigator} from '@react-navigation/stack';
 // Components & Constants
-import {globalStyles} from '../constants/styles';
 import Numerics from '../constants/numerics';
 import Card from '../components/Card';
-import Task from '../components/Task';
 import Colors from '../constants/colors';
 import TaskAdder from '../components/TaskAdder'
 
-import * as SQLite from 'expo-sqlite';
+//SQL Database
+import db from '../constants/database';
+
 // Same implementation as 'didnt' screen, but changes where data is stored
-const database_name = 'taskDB'
-const database_version = '1.0'
-const database_displayname = 'TaskList Database'
-const database_size = 200000
-let db = SQLite.openDatabase(database_name);
 const doing = (props) =>{
     let navigation = props.navigation;
     const [modalVisible, setModalVisible] = useState(false); 
@@ -35,7 +26,6 @@ const doing = (props) =>{
         db.transaction(tx =>{
             tx.executeSql('insert into ' + task.screen + ' (title, description, key, screen) values (?, ?, ?, ?)', [task.title, task.description, task.key, task.screen]);
             tx.executeSql('select * from doing', [], (_, {rows: {_array}}) => {
-                console.log(JSON.stringify(_array));
                 refreshScreen();
             });
 
@@ -54,7 +44,6 @@ const doing = (props) =>{
         db.transaction(tx => {
             tx.executeSql(tx.executeSql('delete from doing;', []));
             tx.executeSql(tx.executeSql('select * from doing', [], (_, {rows: {_array}}) => {
-                console.log(JSON.stringify(_array))
             }));
         });
         setRefresh(!refresh);
@@ -73,7 +62,6 @@ const doing = (props) =>{
             <TaskAdder addTask={addTask} closeModalHandler={closeModalHandler}/>
             </Modal>
             <View style={styles.listContainer}>
-                {/* <Text>{JSON.stringify(props.counter)}</Text>         */}
                 <FlatList 
                     keyExtractor={(item, index) => item.key}
                     data={list}
@@ -93,15 +81,6 @@ const doing = (props) =>{
                         </View>
                     )}
                 />
-                {/* <Button title="refresh screen" onPress={()=>{
-                    console.log('refreshing')
-                    refreshScreen();
-                    }}/>
-                <Button title="Kill List" onPress={()=>{
-                    console.log('Allah Ahkbar')
-                    killList();
-                    }}/> */}
-                {/* <Button title="*" onPress={()=>console.log(JSON.stringify(props.route.params))}/> in case params gets messed up again*/}
                 <View style={styles.addButton}>
                     <TouchableOpacity onPress = {() => {
                         setModalVisible(true)

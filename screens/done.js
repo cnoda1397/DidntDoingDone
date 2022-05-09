@@ -1,26 +1,17 @@
 // React & React Native
 import React, {useState, useEffect} from 'react';
 import {View, StyleSheet, Text, TextInput, FlatList, Button, Modal, TouchableHighlight, TouchableOpacity} from 'react-native'
-import {Formik} from 'formik';
 import { Ionicons } from '@expo/vector-icons';
-// React Navigation
-import {CommonActions} from '@react-navigation/native';
-import {createStackNavigator} from '@react-navigation/stack';
 // Components & Constants
-import {globalStyles} from '../constants/styles';
 import Numerics from '../constants/numerics';
 import Card from '../components/Card';
-import Task from '../components/Task';
+//import Task from '../components/Task';
 import Colors from '../constants/colors';
 import TaskAdder from '../components/TaskAdder'
+//SQL Database
+import db from '../constants/database';
 
-import * as SQLite from 'expo-sqlite';
 // Same implementation as 'didnt' screen, but changes where data is stored
-const database_name = 'taskDB'
-const database_version = '1.0'
-const database_displayname = 'TaskList Database'
-const database_size = 200000
-let db = SQLite.openDatabase(database_name);
 const done = (props) =>{
     let navigation = props.navigation;
     //modal visibility, the array of tasks, boolean switch for when tasks are updated
@@ -37,7 +28,6 @@ const done = (props) =>{
         db.transaction(tx =>{
             tx.executeSql('insert into ' + task.screen + ' (title, description, key, screen) values (?, ?, ?, ?)', [task.title, task.description, task.key, task.screen]);
             tx.executeSql('select * from done', [], (_, {rows: {_array}}) => {
-                console.log(JSON.stringify(_array));
                 refreshScreen();
             });
 

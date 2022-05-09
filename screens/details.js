@@ -1,28 +1,18 @@
 import React, {useState} from 'react';
 import {View, StyleSheet, Text, TextInput, FlatList, Keyboard, SectionList} from 'react-native'
 import CheckBox from '@react-native-community/checkbox';
-import { Header } from 'react-native/Libraries/NewAppScreen';
-import {Formik} from 'formik';
 import {CommonActions} from '@react-navigation/native';
-import {createStackNavigator} from '@react-navigation/stack';
 
 import {globalStyles} from '../constants/styles';
-import Numerics from '../constants/numerics';
-import Card from '../components/Card';
-import Task from '../components/Task';
 import Colors from '../constants/colors';
 import { TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 import { ScrollView } from 'react-native-gesture-handler';
-import * as SQLite from 'expo-sqlite';
 import {HideWithKeyboard} from 'react-native-hide-with-keyboard';
 let mounted = false;
-const database_name = 'taskDB'
-const database_version = '1.0'
-const database_displayname = 'TaskList Database'
-const database_size = 200000
-let db = SQLite.openDatabase(database_name);
+//SQL Database
+import db from '../constants/database';
 
 let screenMap = new Map();
 screenMap['didnt'] = "Didn't";
@@ -77,11 +67,9 @@ const Details = (props) => {
         })
     }, [])
     const typing = () => {
-        console.log('typing');
         setHide(true);
     }
     const notTyping = () => {
-        console.log('no typing')
         setHide(false);
     }
     return (
@@ -113,7 +101,6 @@ const Details = (props) => {
                         value = {newDescription}
                         onChangeText={(value) => setNewDescription(value)}
                         editable = {true}
-                        multiline ={true}
                         textAlign = {'left'}
                         textAlignVertical = {'top'}
                         placeholder = 'No Description Entered Yet'
