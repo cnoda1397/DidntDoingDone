@@ -16,11 +16,8 @@ import TaskAdder from '../components/TaskAdder'
 
 import * as SQLite from 'expo-sqlite';
 // Same implementation as 'didnt' screen, but changes where data is stored
-const database_name = 'taskDB'
-const database_version = '1.0'
-const database_displayname = 'TaskList Database'
-const database_size = 200000
-let db = SQLite.openDatabase(database_name);
+//SQL Database
+import db from '../constants/database';
 const done = (props) =>{
     let navigation = props.navigation;
     //modal visibility, the array of tasks, boolean switch for when tasks are updated

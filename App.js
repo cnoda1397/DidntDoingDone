@@ -1,30 +1,16 @@
 // React & React Native
-import { StatusBar } from 'expo-status-bar';
 import React, {useState} from 'react';
-import { Keyboard, StyleSheet, Text, View, Modal, Button} from 'react-native';
 //React Navigation
 import {NavigationContainer} from '@react-navigation/native';
 import {createStackNavigator} from '@react-navigation/stack';
-// Components & Constants
-import Header from './components/Header';
-import Didnt from './screens/didnt.js';
-import Details from './screens/details';
-// import Modal from 'react-native-modal';
-import {globalStyles} from './constants/styles';
-import Colors from './constants/colors';
-import {TaskInfo} from './components/TaskAdder';
-import Task from './components/Task';
+
 import SwipeNav from './navigation/SwipeNav';
 
-import * as SQLite from 'expo-sqlite';
 //import SQLite from 'react-native-sqlite-2';
 // SQL stuff to store data in a database
 let doOnce = true;
-const database_name = 'taskDB'
-const database_version = '1.0'
-const database_displayname = 'TaskList Database'
-const database_size = 200000
-let db = SQLite.openDatabase(database_name);
+//SQL Database
+import db from '../constants/database';
 //
 class App extends React.Component {
     constructor(props){
@@ -40,20 +26,20 @@ class App extends React.Component {
     }
     populateDB = () => {
         db.transaction(tx =>{
-            //tx.executeSql('drop table didnt if exists');
             tx.executeSql('create table if not exists didnt (title text, description text, key text, screen text);', [], this.successCB, this.errorCB);
-            //tx.executeSql('delete from didnt where screen = ?', ['didnt'])
             tx.executeSql('create table if not exists doing (title text, description text, key text, screen text);', [], this.successCB, this.errorCB);
             tx.executeSql('create table if not exists done (title text, description text, key text, screen text);', [], this.successCB, this.errorCB);
+            //Debugging tests to check on DB
+
             //tx.executeSql('insert into doing (title, description, key, screen) values (?, ?, ?, ?)', ['Hello World', 'Can you hear me?', Date.now().toString(), 'didnt']);
             //tx.executeSql('insert into doing (title, description, key, screen) values (?, ?, ?, ?)', ['good bye', 'I know you hear me.', Date.now().toString(), 'didnt']);
             //tx.executeSql('select * from didnt', [], (_, { rows }) => console.log(JSON.stringify(rows))) ;
             
             //tx.executeSql('delete from ' + temp + ' where title = ?;', ['H']);
-            tx.executeSql('select * from ' + 'didnt', [], (_, { rows }) => console.log(JSON.stringify(rows))) ;
+            //tx.executeSql('select * from ' + 'didnt', [], (_, { rows }) => console.log(JSON.stringify(rows))) ;
 
         });
-        console.log('populated');
+        //console.log('populated');
     }
 
     errorCB = err => {
